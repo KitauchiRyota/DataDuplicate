@@ -6,16 +6,16 @@ function doGet() {
       .setTitle('データ複製App'); // ブラウザのタブに表示されるタイトル
 }
 
-// https://docs.google.com/spreadsheets/d/1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU/edit?usp=drive_link
-// 1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU
-// https://script.google.com/d/1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh/edit?usp=drive_link
-// https://docs.google.com/presentation/d/1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k/edit?usp=drive_link&ouid=106881036912205881453&rtpof=true&sd=true
 
 function copyFileByDriveApi() {
   // const srcFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx
-  const srcFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS
+  // const srcFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS
   // const srcFileId = '1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU'; // spreadSheet
-  const destFolderId = '1FIFoJSRiYjX6RNb83H13eHJ4nomUchC0';
+  // const srcFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
+  const srcFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
+
+  // const destFolderId = '1FIFoJSRiYjX6RNb83H13eHJ4nomUchC0'; // 26Adv1st作成班
+  const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
   const namedest = '自己紹介Bookのコピー';
   const fileName = DriveApp.getFileById(srcFileId).getName();
   Logger.log(fileName);
