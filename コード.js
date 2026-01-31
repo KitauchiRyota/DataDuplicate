@@ -18,12 +18,12 @@ function getFolderItems(){
 
   while (folders.hasNext()) {
     const folder = folders.next();
-    Logger.log(folder.getName());
+    Logger.log(folder.getName() + '：' + folder.getId());
   }
 
   while (files.hasNext()) {
     const file = files.next();
-    Logger.log(file.getName());
+    Logger.log(file.getName() + '：' + file.getId());
   }
 }
 
@@ -34,13 +34,13 @@ function copyFileByDriveApi() {
   // const srcFileId = '1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU'; // spreadSheet
   // const srcFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
   // const srcFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
-  const srcFileId = '17Zdb_RgUSG0IRiOtV1MsC2abQ1TMZgdR'; // 1-3のショートカット
+  const srcFileId = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // 
 
   // const destFolderId = '1FIFoJSRiYjX6RNb83H13eHJ4nomUchC0'; // 26Adv1st作成班
   const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
-  const namedest = '自己紹介Bookのコピー';
+  const namedest = 'ショートカットのコピー';
   const fileName = DriveApp.getFileById(srcFileId).getName();
-  Logger.log(fileName);
+  Logger.log('Original File Name :' +fileName );
 
   // ショートカットなど、全ての形式を統一処理でコピーするため、makeCopyでは無く　APIをGASから呼び出す
   const copied = Drive.Files.copy(
@@ -51,6 +51,8 @@ function copyFileByDriveApi() {
     srcFileId
   );
 
+
+  // // 2. GASプロジェクトの場合、手動でフォルダを移動させる
   const file = DriveApp.getFileById(srcFileId);
   Logger.log(file.getMimeType());
 
@@ -58,13 +60,13 @@ function copyFileByDriveApi() {
 
     Logger.log('Start proccessing for GAS');
 
-    // 2. GASプロジェクトの場合、手動でフォルダを移動させる
     const copiedFile = DriveApp.getFileById(copied.id);
     const destFolder = DriveApp.getFolderById(destFolderId);
 
     // 目的のフォルダに移動
     copiedFile.moveTo(destFolder);
   }
+
 
   Logger.log(copied.id);
 }
