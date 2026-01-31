@@ -7,6 +7,22 @@ function doGet() {
 }
 
 /**
+ * URLからIDを取得する関数
+ */
+function getIdFromURL(url) {
+  // 正規表現で、『「半角英字（大文字・小文字）」、「半角数字」、「アンダーバー」、「ハイフン」のみからなる25文字以上』のパターンにマッチする部分を抜き出す
+  const match = url.match(/[-\w]{25,}/);
+  if (!match) throw new Error('ファイルIDを取得できません');
+  return match[0];
+}
+
+function test(){
+  // const url = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0';
+  // const url = 'https://calendar.google.com/calendar/u/0/r';
+  Logger.log(getIdFromURL(url));
+}
+
+/**
  * フォルダIDからファイルイテレータを取得する関数のテスト
  */
 function getFolderItems(){
