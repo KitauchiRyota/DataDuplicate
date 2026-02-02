@@ -8,6 +8,8 @@ function doGet() {
 
 /**
  * URLからIDを取得する関数
+ * @param {string} url
+ * @return {string}
  */
 function getIdFromURL(url) {
   // 正規表現で、『「半角英字（大文字・小文字）」、「半角数字」、「アンダーバー」、「ハイフン」のみからなる25文字以上』のパターンにマッチする部分を抜き出す
@@ -16,10 +18,67 @@ function getIdFromURL(url) {
   return match[0];
 }
 
-function test(){
+/**
+ * Googleドライブ上で有効なIDかを判定する
+ * @param {string} id
+ * @return {boolean}
+ */
+function isValidDriveId(id) {
+  try {
+    // IDをキーにしてファイルが取得できるかを検証、できればファイルは存在＆権限ありと判断
+    Drive.Files.get(id, { fields: 'id' });
+    return ture;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * IDからファイルの種類（MIME Type）を返す関数
+ * @param {string} id
+ * @return {string} MIME Type
+ */
+function getMimeTypeById(id){
+  const f = Drive.Files.get(id, { fields: 'mimeType' });
+  return f.mimeType;
+}
+
+function test2(){
+  // const id = '1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng'; // Lmtg自動送信スプシ
+  const id = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+
+  if(isValidDriveId(id)){
+    // const f = DriveApp.getFolderById(id);
+
+    const f = DriveApp.getFileById(id);
+    Logger.log(f.getName());
+    Logger.log(f.getMimeType());
+  }
+}
+
+function test(url){
   // const url = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0';
-  // const url = 'https://calendar.google.com/calendar/u/0/r';
-  Logger.log(getIdFromURL(url));
+  // const url = 'https://drive.google.com/drive/folders/11zMWmANZKMrQYvcM6hO_DneJHlbmif_H';
+
+  const id = getIdFromURL(url);
+  if(isValidDriveId(id)){
+    return 'invalid id';
+    // throw new Error('無効なドライブIDです');
+  }
+
+  const ftype = getMimeTypeById(id);
+  Logger.log(ftype);
+
+  if(ftype === 'application/vnd.google-apps.folder'){
+    const folder = DriveApp.getFolderById(id);
+    return 'folder';
+    // return 'これはフォルダです。：' + folder.getName();
+
+  }else{
+    const file =DriveApp.getFileById(id);
+    return 'file';
+    // return 'これは何らかのファイルです。：' + file.getName();
+  }
 }
 
 /**

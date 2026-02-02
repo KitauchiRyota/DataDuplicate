@@ -24,28 +24,29 @@
     <input id="origin-data" type="text" required></input>
     <!-- Todo：アクセス権、有効なURLかなどのバリデーション -->
 
-    <li><label for="qty">作りたい個数：</label>
-    <input id="qty" type="number" required></input>
+    <!-- <li><label for="qty">作りたい個数：</label>
+    <input id="qty" type="number" required></input> -->
     <!-- Todo：数値か、空欄かなどバリデーション -->
 
-    <li><label for="data-dest">複製先のフォルダ元のURL：</label>
-    <input id="data-dest" type="text" required></input><div>※デフォルトは、元データと同じ場所</div>
+    <!-- <li><label for="data-dest">複製先のフォルダ元のURL：</label>
+    <input id="data-dest" type="text" required></input><div>※デフォルトは、元データと同じ場所</div> -->
     <!-- Todo：元データのURLで初期化 -->
 
-    <li><label for="rule-type">複製後のデータ名に規則性を設定する：</label><input type="checkbox"></input><br>
+    <!-- <li><label for="rule-type">複製後のデータ名に規則性を設定する：</label><input type="checkbox"></input><br> -->
     <!-- Todo：チェックボックスをクリックすると以降の選択肢が表示されるように、それまでは非表示に -->
     
-    <input id="data-name" type="text" value="★" required></input><br>
-    <div>※「★」の位置が、下で選んだ規則で置き換わります。この方法で複製する場合、データ名に「★」を含めることはできません。</div>
+    <!-- <input id="data-name" type="text" value="★" required></input><br> -->
+    <!-- <div>※「★」の位置が、下で選んだ規則で置き換わります。この方法で複製する場合、データ名に「★」を含めることはできません。</div> -->
     <!-- Todo：★の数（0個も許しても良い。）、Googleドライブ側のデータ名に使える文字のルールについて、 -->
 
-    <label for="rule-num"><input id="rule-num" type="radio" name="rule-type" value="num" required>1、2、3、・・・</label><br>
+    <!-- <label for="rule-num"><input id="rule-num" type="radio" name="rule-type" value="num" required>1、2、3、・・・</label><br>
     <label for="rule-alp"><input id="rule-alp" type="radio" name="rule-type" value="alp">A、B、C・・・</label><br>
     <label for="rule-any"><input id="rule-any" type="radio" name="rule-type" value="any">ユーザー定義</label>
-    <input id="user-defined-rule" type="text"></input><br>
+    <input id="user-defined-rule" type="text"></input><br> -->
     <!-- Todo：ユーザー定義のラジオを選択すると選択肢が表示されるように、それまでは非表示。どれも選んでない状態はエラーを出す。 -->
     
     <button type="submit">複製</button>
+    <div id="status"></div>
   </ul>
   </form>
 
@@ -55,10 +56,25 @@
     const selectElement = document.getElementById('weekdaySelect');
     const statusMessageDiv = document.getElementById('statusMessage');
 
+    const statusDiv = document.getElementById('status');
     const duplicateDataForm = document.getElementById('duplicate-data');
     duplicateDataForm.addEventListener('submit',async(e) =>{
       e.preventDefault();
+      const inputUrl = document.getElementById('origin-data').value;
+      console.log(inputUrl + ',' + typeof(inputUrl));
+      duplicationTest(inputUrl);
     })
+
+    function duplicationTest(url){
+      google.script.run.withSuccessHandler(res =>{
+        console.log(res);
+        statusDiv.textContent = res;
+      })
+      .withFailureHandler(err => {
+        console.error(err);
+        return err;
+      }).test(url);
+    }
 
     /**
      * 送信ボタンが押されたときにGAS関数を呼び出す
