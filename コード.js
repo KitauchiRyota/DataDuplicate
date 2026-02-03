@@ -6,6 +6,7 @@ function doGet() {
       .setTitle('データ複製App'); // ブラウザのタブに表示されるタイトル
 }
 
+
 /**
  * URLからIDを取得する関数
  * @param {string} url
@@ -27,7 +28,7 @@ function isValidDriveId(id) {
   try {
     // IDをキーにしてファイルが取得できるかを検証、できればファイルは存在＆権限ありと判断
     Drive.Files.get(id, { fields: 'id' });
-    return ture;
+    return true;
   } catch (e) {
     return false;
   }
@@ -43,9 +44,19 @@ function getMimeTypeById(id){
   return f.mimeType;
 }
 
+/**
+ * IDから、ファイルに複製の権限があるかを判定する関数
+ * @param {string} id
+ * @return {boolean}
+ */
+function haveCopyPermission(id){
+  const f = Drive.Files.get(id, { fields: 'capabilities' });
+  return f.capabilities?.canCopy === true; // フォルダの場合は常にfalseになる
+}
+
 function test2(){
-  // const id = '1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng'; // Lmtg自動送信スプシ
-  const id = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+  const id = '1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng'; // Lmtg自動送信スプシ
+  // const id = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
 
   if(isValidDriveId(id)){
     // const f = DriveApp.getFolderById(id);
@@ -53,6 +64,9 @@ function test2(){
     const f = DriveApp.getFileById(id);
     Logger.log(f.getName());
     Logger.log(f.getMimeType());
+    Logger.log(haveCopyPermission(id));
+  }else{
+    Logger.log('finish');
   }
 }
 
@@ -61,7 +75,7 @@ function test(url){
   // const url = 'https://drive.google.com/drive/folders/11zMWmANZKMrQYvcM6hO_DneJHlbmif_H';
 
   const id = getIdFromURL(url);
-  if(isValidDriveId(id)){
+  if(!isValidDriveId(id)){
     return 'invalid id';
     // throw new Error('無効なドライブIDです');
   }
@@ -69,15 +83,17 @@ function test(url){
   const ftype = getMimeTypeById(id);
   Logger.log(ftype);
 
+  const isCopyable = haveCopyPermission(id) ? '複製可能' : '複製不可' ;
+
   if(ftype === 'application/vnd.google-apps.folder'){
     const folder = DriveApp.getFolderById(id);
-    return 'folder';
-    // return 'これはフォルダです。：' + folder.getName();
+    // return 'folder';
+    return 'これはフォルダです。：' + folder.getName();
 
   }else{
     const file =DriveApp.getFileById(id);
-    return 'file';
-    // return 'これは何らかのファイルです。：' + file.getName();
+    // return 'file';
+    return 'これは何らかのファイルです。：' + file.getName() + ',' +isCopyable;
   }
 }
 

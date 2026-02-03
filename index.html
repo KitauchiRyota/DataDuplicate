@@ -53,13 +53,12 @@
   <div id="statusMessage"></div>
 
   <script>
-    const selectElement = document.getElementById('weekdaySelect');
-    const statusMessageDiv = document.getElementById('statusMessage');
 
     const statusDiv = document.getElementById('status');
     const duplicateDataForm = document.getElementById('duplicate-data');
     duplicateDataForm.addEventListener('submit',async(e) =>{
       e.preventDefault();
+      statusDiv.textContent = '';
       const inputUrl = document.getElementById('origin-data').value;
       console.log(inputUrl + ',' + typeof(inputUrl));
       duplicationTest(inputUrl);
@@ -75,6 +74,12 @@
         return err;
       }).test(url);
     }
+
+
+    // 以降は議事録送信プログラム
+
+    const selectElement = document.getElementById('weekdaySelect');
+    const statusMessageDiv = document.getElementById('statusMessage');
 
     /**
      * 送信ボタンが押されたときにGAS関数を呼び出す
