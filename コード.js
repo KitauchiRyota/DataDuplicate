@@ -54,7 +54,73 @@ function haveCopyPermission(id){
   return f.capabilities?.canCopy === true; // フォルダの場合は常にfalseになる
 }
 
-function test2(){
+/**
+ * コピーしたいファイルのIDから、保存先、ファイル名を指定してコピーする関数
+ * @param {string} srcFileId コピーしたいファイルのID
+ * @param {string} destFolderId コピー先のフォルダID
+ * @param {string} [copiedFileName] コピー後のファイル名
+ * @return {File} copiedFile コピー後のファイルのファイルオブジェクト
+ */
+function copyFileToDsestFolderById(srcFileId,destFolderId,copiedFileName = null){
+
+  Logger.log('origin file name : ' + DriveApp.getFileById(srcFileId).getName());
+
+  // 名前指定が無い場合は、元ファイルと同じ名前にする
+  let fileName;
+  Logger.log('input file name : ' + copiedFileName);
+  if(copiedFileName){
+    fileName = copiedFileName;
+  }else{
+    fileName = DriveApp.getFileById(srcFileId).getName();
+  }
+  Logger.log('created file name : ' + fileName);
+
+  
+  // ショートカットなど、全ての形式を統一処理でコピーするため、makeCopyでは無くDriveAPIをGASから呼び出す
+  const copiedFile = Drive.Files.copy(
+    {
+      title: fileName,
+      parents: [{ id: destFolderId }]
+    },
+    srcFileId
+  );
+
+  Logger.log('copiedFile-mimeType : ' + copiedFile.mimeType);
+
+  // スタンドアロン型のGASプロジェクトの場合は強制的にマイドライブに複製されるので、複製後に改めて移動
+  if(copiedFile.mimeType === 'application/vnd.google-apps.script'){
+    Logger.log('mime-type : gas');
+    const f = DriveApp.getFileById(copiedFile.id);
+    const destFolder = DriveApp.getFolderById(destFolderId);
+
+    // 目的のフォルダに移動
+    f.moveTo(destFolder);
+  }
+
+  Logger.log('copiedFile.id : ' + copiedFile.id);
+  return copiedFile;
+}
+
+function test(){
+  // const srcFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
+  // const srcFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS マイドライブのpractice
+  // const srcFileId = '1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU'; // spreadSheet
+  // const srcFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
+  // const srcFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
+  // const srcFileId = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
+  const srcFileId = '1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM'; // マイドライブ上のフォームにリンクされているスプシ
+
+  // const destFolderId = '1FIFoJSRiYjX6RNb83H13eHJ4nomUchC0'; // 26Adv1st作成班
+  const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+
+  const namedest = 'ショートカットのコピー';
+  
+  copyFileToDsestFolderById(srcFileId,destFolderId);
+}
+
+// 他の関数のJSDocsを書く
+
+function test2oooooooooo(){
   const id = '1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng'; // Lmtg自動送信スプシ
   // const id = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
 
@@ -70,7 +136,7 @@ function test2(){
   }
 }
 
-function test(url){
+function test00000000000000(url){
   // const url = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0';
   // const url = 'https://drive.google.com/drive/folders/11zMWmANZKMrQYvcM6hO_DneJHlbmif_H';
 
