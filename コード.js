@@ -101,6 +101,51 @@ function copyFileToDsestFolderById(srcFileId,destFolderId,copiedFileName = null)
   return copiedFile;
 }
 
+/**
+ * ショートカットを生成する関数
+ */
+function createDriveShortcut() {
+  // const targetFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
+  // const targetFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS マイドライブのpractice
+  // const targetFileId = '1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU'; // spreadSheet
+  // const targetFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
+  // const targetFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
+  // const targetFileId = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
+  // const targetFileId = '1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM'; // マイドライブ上のフォームにリンクされているスプシ
+  // const targetFileId = '1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ'; // プライベートアカウントのマイドライブ上のダミーデータ
+  // const targetFileId = '17PRLe1GPz-6tFj9oZ1RgtN9uyCc15q-2'; // 1-3のフォルダ
+  const targetFileId = '1swkNaeoaiCBWhpctrmxojTtDAWIcBNSi' // 1-3のフォルダ（オーナー自分）
+
+  const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+  // const destFolderId = '1Cv6n4vgm_c4siFbFNrg00OorDjm6aSD3';
+  const shortcutName = DriveApp.getFileById(targetFileId).getName();
+
+  const shortcut = Drive.Files.create(
+    {
+      name: shortcutName,
+      mimeType: 'application/vnd.google-apps.shortcut',
+      parents: [destFolderId],
+      shortcutDetails: {
+        targetId: targetFileId
+      }
+    }
+  );
+
+  Logger.log(shortcut.id);
+}
+
+/**
+ * ショートカットの名前取得テスト
+ */
+function a(){
+  // const id = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
+  const id = '1L9iumWUHtnq31EJfSkA-tQ4sWnGnWJr9'; // 2-1のショートカット
+
+  const f = Drive.Files.get(id, { fields: 'name' });
+  Logger.log(f.name);
+}
+
+
 function test(){
   // const srcFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
   // const srcFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS マイドライブのpractice
@@ -177,7 +222,8 @@ function test00000000000000(){
  * フォルダIDからファイルイテレータを取得する関数のテスト
  */
 function getFolderItems(){
-  const srcFolderId = '17PRLe1GPz-6tFj9oZ1RgtN9uyCc15q-2'; // 1-3のフォルダ
+  // const srcFolderId = '17PRLe1GPz-6tFj9oZ1RgtN9uyCc15q-2'; // 1-3のフォルダ
+  const srcFolderId = '1V-8BPJ2dDBY1b6Je_D8AyjaPkDS3pJvc'; // 2-1のフォルダ
 
   const originfolder = DriveApp.getFolderById(srcFolderId);
   const folders = originfolder.getFolders();
