@@ -50,7 +50,7 @@ function getMimeTypeById(id){
  * @return {boolean}
  */
 function haveCopyPermission(id){
-  const f = Drive.Files.get(id, { fields: 'capabilities' });
+  const f = Drive.Files.get(id, { fields: 'capabilities(canCopy)' });
   return f.capabilities?.canCopy === true; // フォルダの場合は常にfalseになる
 }
 
@@ -79,8 +79,8 @@ function copyFileToDsestFolderById(srcFileId,destFolderId,copiedFileName = null)
   // ショートカットなど、全ての形式を統一処理でコピーするため、makeCopyでは無くDriveAPIをGASから呼び出す
   const copiedFile = Drive.Files.copy(
     {
-      title: fileName,
-      parents: [{ id: destFolderId }]
+      name: fileName,
+      parents: [destFolderId]
     },
     srcFileId
   );
@@ -108,7 +108,9 @@ function test(){
   // const srcFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
   // const srcFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
   // const srcFileId = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
-  const srcFileId = '1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM'; // マイドライブ上のフォームにリンクされているスプシ
+  // const srcFileId = '1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM'; // マイドライブ上のフォームにリンクされているスプシ
+  // const srcFileId = '1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ'; // プライベートアカウントのマイドライブ上のダミーデータ
+
 
   // const destFolderId = '1FIFoJSRiYjX6RNb83H13eHJ4nomUchC0'; // 26Adv1st作成班
   const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
@@ -123,6 +125,7 @@ function test(){
 function test2oooooooooo(){
   const id = '1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng'; // Lmtg自動送信スプシ
   // const id = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+  // const id = '1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ'; // プライベートアカウントのマイドライブ上のダミーデータ
 
   if(isValidDriveId(id)){
     // const f = DriveApp.getFolderById(id);
@@ -136,12 +139,15 @@ function test2oooooooooo(){
   }
 }
 
-function test00000000000000(url){
-  // const url = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0';
-  // const url = 'https://drive.google.com/drive/folders/11zMWmANZKMrQYvcM6hO_DneJHlbmif_H';
+function test00000000000000(){
+  // const url = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0'; // Lmtg議事録自動送信
+  // const url = 'https://drive.google.com/drive/folders/11zMWmANZKMrQYvcM6hO_DneJHlbmif_H'; // リーダー業務（マイドライブ）
+  const url ='https://docs.google.com/spreadsheets/d/1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ/edit?usp=sharing'; // プライベートアカウントのマイドライブ上のダミーデータ
 
   const id = getIdFromURL(url);
   if(!isValidDriveId(id)){
+    Logger.log('無効なドライブIDです');
+    
     return 'invalid id';
     // throw new Error('無効なドライブIDです');
   }
@@ -153,11 +159,15 @@ function test00000000000000(url){
 
   if(ftype === 'application/vnd.google-apps.folder'){
     const folder = DriveApp.getFolderById(id);
+    Logger.log('これはフォルダです。：' + folder.getName());
+    
     // return 'folder';
     return 'これはフォルダです。：' + folder.getName();
 
   }else{
     const file =DriveApp.getFileById(id);
+    Logger.log('これは何らかのファイルです。：' + file.getName() + ',' +isCopyable);
+
     // return 'file';
     return 'これは何らかのファイルです。：' + file.getName() + ',' +isCopyable;
   }
