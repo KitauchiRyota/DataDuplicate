@@ -101,6 +101,9 @@ function copyFileToDsestFolderById(srcFileId,destFolderId,copiedFileName = null)
   return copiedFile;
 }
 
+// フォームとリンクされているスプシをコピーした際に、余分にコピーされるフォームを削除する
+
+
 /**
  * ショートカットを生成する関数
  */
@@ -137,7 +140,7 @@ function createDriveShortcut() {
 /**
  * ショートカットの名前取得テスト
  */
-function a(){
+function getShortcutNameTest(){
   // const id = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
   const id = '1L9iumWUHtnq31EJfSkA-tQ4sWnGnWJr9'; // 2-1のショートカット
 
@@ -145,6 +148,20 @@ function a(){
   Logger.log(f.name);
 }
 
+// スプシから、リンク元のフォームを得るテスト
+function isFormLinked(){
+  const url = 'https://docs.google.com/spreadsheets/d/1jptLcpaUtOItdCuFi8DwAG10LnnnP2LDY5jvSZS6zUI/edit?gid=0#gid=0'; // フォームリンク無し
+  // const url = 'https://docs.google.com/spreadsheets/d/1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM/edit?usp=sharing'; // フォームリンク有り
+  const ss = SpreadsheetApp.openByUrl(url);
+  const formUrl = ss.getFormUrl();
+  if(formUrl){
+    Logger.log('Linked Form: ' +formUrl);
+    return true;
+  }else{
+    Logger.log('No Linked Form');
+    return false;
+  }
+}
 
 function test(){
   // const srcFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
