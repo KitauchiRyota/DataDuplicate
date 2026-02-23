@@ -149,8 +149,8 @@ function getShortcutNameTest(){
 }
 
 // スプシから、リンク元のフォームを得るテスト
-function isFormLinked(){
-  const url = 'https://docs.google.com/spreadsheets/d/1jptLcpaUtOItdCuFi8DwAG10LnnnP2LDY5jvSZS6zUI/edit?gid=0#gid=0'; // フォームリンク無し
+function isFormLinked(url){
+  // const url = 'https://docs.google.com/spreadsheets/d/1jptLcpaUtOItdCuFi8DwAG10LnnnP2LDY5jvSZS6zUI/edit?gid=0#gid=0'; // フォームリンク無し
   // const url = 'https://docs.google.com/spreadsheets/d/1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM/edit?usp=sharing'; // フォームリンク有り
   const ss = SpreadsheetApp.openByUrl(url);
   const formUrl = ss.getFormUrl();
@@ -162,6 +162,21 @@ function isFormLinked(){
     return false;
   }
 }
+
+function testFormLinkedFunction(){
+  // const url = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0'; // Lmtg議事録自動送信
+  // const url ='https://docs.google.com/spreadsheets/d/1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ/edit?usp=sharing'; // プライベートアカウントのマイドライブ上のダミーデータ
+  const url = 'https://docs.google.com/spreadsheets/d/10iviMG7lp3103Z4A1h8EULblP2qvyy1CKp4U2iTCxwU/edit?usp=sharing'; // フォームの回答先（挙動テストフォルダのスプシ）
+
+  if(isFormLinked(url)){
+    Logger.log('このスプシは、何かのフォームの回答先となっています')
+  }
+  else{
+    Logger.log('このスプシは、フォームの回答先ではありません')
+  }
+
+}
+
 
 function test(){
   // const srcFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
