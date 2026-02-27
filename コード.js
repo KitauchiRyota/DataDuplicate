@@ -203,7 +203,7 @@ let isTopFolder = false;
 /**
  * フロントから呼ばれるmain関数の予定・・・
  */
-function main(srcUrl, qty, destUrl){
+function main(srcUrl, qty, destNames, destUrl){
 
   // // 1.オリジナルファイルの確認
   // URLからファイルIDを抽出
@@ -265,15 +265,18 @@ function main(srcUrl, qty, destUrl){
   // ファイルの複製（ループ）
   if(src.mimeType !== 'application/vnd.google-apps.folder'){
     // Todo：作成後ファイルの名前指定機能
-    for(let i=0 ; i<qty ; i++){
-      copyFileToFolder(src,dest.id);
+    // for(let i=0 ; i<qty ; i++){
+    for(const name of destNames){
+      copyFileToFolder(src,dest.id,name);
       // 名前指定が無い場合、同じ名前のデータが生成されるので、「_のコピー1」とかにする
     }
   }else{
     // フォルダの複製（再帰）
-    for(let i=0 ; i<qty ; i++){
+    // for(let i=0 ; i<qty ; i++){
+    for(const name of destNames){
+
       isTopFolder = true;
-      copyFolder(src,dest.id); // Todo
+      copyFolder(src,dest.id,name); // Todo
       // 名前指定が無い場合、同じ名前のデータが生成されるので、「_のコピー1」とかにする
     }
   }

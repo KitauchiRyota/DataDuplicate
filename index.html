@@ -24,21 +24,24 @@
     <input id="origin-data" type="text" required>
     <!-- Todo：アクセス権、有効なURLかなどのバリデーション -->
 
-    <li><label for="qty">作りたい個数：</label>
+    <li><label for="qty">作りたい個数</label>
     <br>
+
     <label><input type="radio" name="qty-desig" value="qty-num">A.個数を指定して作成</label>
     <div id='qty-num-options' class='qty-opt' style='display:none;'>
-      <label>新たに作る個数<input id="qty-num" type="number" min=1></label>
-      <label>（任意）コピー後のファイル名<input id="dest-name" type="texet"></label>
-      <div>「★」の位置を下で選んだ規則で置き換えることができます。「★」は使用しなくてもかまいません。※この方法で複製する場合、データ名に含まれる「★」は、必ず下の規則にで置き換わります。</div>
+    <ul>
+      <li><label>新たに作る個数：<input id="qty-num" type="number" min=1></label><br>
+      <li><label>（任意）コピー後のデータ名：<input id="dest-name" type="texet"></label>
+      <div>コピー後のデータ名を指定したい場合は、入力してください。空欄の場合、「（元のデータ名）_コピー1」の形式で、末尾の数字がカウントアップされます。<br>また、ここで入力するデータ名の「★」の位置を、下で選んだ規則で置き換えることができます。「★」は使用しなくてもかまいません。<br>※この方法で複製する場合、データ名に含まれる「★」は、必ず下の規則で置き換わります。</div>
       <label><input type="radio" name="rule-type" value="num" checked>1、2、3、・・・</label><br>
       <label><input type="radio" name="rule-type" value="alp">A、B、C・・・</label><br>
+    </ul>
     </div>
 
     <br>
     <label><input type="radio" name="qty-desig" value="list">B.リスト分作成</label>
     <div id='qty-list-options' class='qty-opt' style='display:none;'>
-      <label>リストを入力<textarea id="qty-list"></textarea></label>
+      <label>リストを入力（改行で区切ります）<textarea id="qty-list"></textarea></label>
     </div>
     <!-- Todo：数値か、空欄かなどバリデーション -->
 
@@ -90,13 +93,28 @@
     const duplicateDataForm = document.getElementById('duplicate-data');
     duplicateDataForm.addEventListener('submit',async(e) =>{
       e.preventDefault();
+
+      const qtyList = document.getElementById('qty-list').value;
+      // 改行で分割し、空白文字の行を除去
+      const nameArray = qtyList
+        .split("\n")
+        .map(name => name.trim())
+        .filter(name => name !== "");
+
+      console.log('list :' + nameArray);
+      console.log('type of list ;' + typeof(nameArray));
+
+      const qty = nameArray.length;
+
       statusDiv.textContent = '';
-      const inputUrl = document.getElementById('origin-data').value;
-      console.log(inputUrl + ',' + typeof(inputUrl));
-      duplicationTest(inputUrl);
+      const srcUrl = document.getElementById('origin-data').value;
+      const destUrl = document.getElementById('data-dest').value;
+
+      // console.log(inputUrl + ',' + typeof(inputUrl));
+      duplicationTest(srcUrl, qty, nameArray, destUrl);
     })
 
-    function duplicationTest(url){
+    function duplicationTest(srcUrl, qty, nameArray, destUrl){
       google.script.run.withSuccessHandler(res =>{
         console.log(res);
         statusDiv.textContent = res;
@@ -104,7 +122,7 @@
       .withFailureHandler(err => {
         console.error(err);
         return err;
-      }).test(url);
+      }).main(srcUrl, qty, nameArray, destUrl);
     }
 
 
