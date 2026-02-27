@@ -30,7 +30,7 @@ function getDriveMetaData(id) {
     const f = Drive.Files.get(id, { fields: 'id,name,mimeType,capabilities(canCopy,canEdit),shortcutDetails(targetId)' });
     return f;
   } catch (e) {
-    return false;
+    return null;
   }
 }
 
@@ -63,9 +63,15 @@ function copyFileToFolder(srcFile,destFolderId,copiedFileName = null){
   const srcFileId = srcFile.id;
   const srcFileMimeType = srcFile.mimeType;
   const srcFileName = srcFile.name;
-  // const srcFileCanCopy = srcFile.capabilities.canCopy;
+  const srcFileCanCopy = srcFile.capabilities.canCopy;
   const srcFileShortcutTargetId = srcFile.shortcutDetails?.targetId ?? null; 
 
+  // 複製権限が無いとき
+  if(!srcFileCanCopy){
+    Logger.log('コピー元ファイルに対する複製権限がありません。');
+    // throw new Error('コピー元ファイルに対する複製権限がありません。');
+    return null;
+  }
 
   // 名前指定が無い場合は、元ファイルと同じ名前にする
   let fileName;
@@ -141,45 +147,58 @@ function copyFileToFolder(srcFile,destFolderId,copiedFileName = null){
 
 /**
  * Googleドライブのフォルダを再帰的にコピーする関数
+ * @param {object} srcFolder getDriveMetaDataで取得した形式のファイルオブジェクト
+ * @param {string} destFolderId コピー先のフォルダID
+ * @param {string} [copiedFolderName] コピー後のフォルダ名
+ * @return {File} copiedFolder コピー後のファイルのファイルオブジェクト
  */
-function copyFolder(srcFolderId,destFolderId){
+function copyFolder(srcFolder,destFolderId,copiedFolderName=null){
 
-  // APIでメタデータを取得
-  const src = getDriveMetaData(srcFolderId);
+  const srcFolderId = srcFolder.id;
 
-  // メタデータを所得できなかった場合
-  if(!src){ 
-    Logger.log('無効なURL、もしくはアクセス権限がありません。');
-    throw new Error('無効なURL、もしくはアクセス権限がありません。');
-    // return 0; // 適切な戻り値を設定する
+  let folderName = '';
+  Logger.log('input folder name : ' + copiedFolderName);
+
+  // 再帰の初回の実行時かつ名前指定有りの場合は、名前指定
+  if(isTopFolder && copiedFolderName){
+    folderName = copiedFolderName;
+    isTopFolder = false;
+  }else{
+    // 元フォルダと同じ名前
+    folderName = srcFolder.name;
+  }
+  Logger.log('created folder name : ' + folderName);
+
+
+  // フォルダ生成
+  const createdFolder = Drive.Files.create(
+    {
+      name: folderName,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [destFolderId],
+    },
+    null,
+    { fields: "id,name,mimeType" }
+  );
+
+  const children = Drive.Files.list({
+    q: `'${srcFolderId}' in parents and trashed = false`,
+    fields: 'files(id,name,mimeType,capabilities(canCopy),shortcutDetails(targetId))'
+  }).files;
+
+  for(const child of children){
+    if(child.mimeType === 'application/vnd.google-apps.folder'){
+      copyFolder(child,createdFolder.id);
+    }else{
+      copyFileToFolder(child,createdFolder.id);
+    }
   }
 
-  // フォルダ以外で複製権限が無いとき（フォルダの場合は常に複製権限無しになる）
-  if(src.mimeType !== 'application/vnd.google-apps.folder' && !src.capabilities.canCopy){
-    Logger.log('このファイルに対する複製権限がありません。');
-    // throw new Error('このファイルに対する複製権限がありません。'); // 再帰中にたまたま1つだけ該当する可能性もあるのでループのcontinueに近い処理にした方が良いかも
-    return;
-  }
-  const originfolder = DriveApp.getFolderById(srcFolderId);
-  const files = originfolder.getFiles();
-  const subFolders = originfolder.getFolders();
-
-  while (files.hasNext()) {
-    const file = files.next();
-    Logger.log(file.getName() + '：' + file.getId());
-    // copyFile(file.getId(),destFolderId); // この関数を作る
-  }
-
-  // フォルダは再帰的にコピー
-  while (subFolders.hasNext()) {
-    const subFolder = subFolders.next();
-    Logger.log(subFolder.getName() + '：' + subFolder.getId());
-    // copyFolder() // 再帰
-    const destFolder = DriveApp.getFolderById(destFolderId);
-    const newSubFolder = destFolder.createFolder(originfolder.getName());
-    copyFolder(subFolder.getId(),newSubFolder.getId())
-  }
+  return createdFolder;
 }
+
+// 複製後のフォルダの名前を指定する場合、再帰関数の初回だけフォルダ名を指定するためのグローバル変数
+let isTopFolder = false;
 
 /**
  * フロントから呼ばれるmain関数の予定・・・
@@ -201,18 +220,19 @@ function main(srcUrl, qty, destUrl){
   const src = getDriveMetaData(srcId);
 
   // メタデータを所得できなかった場合
-  if(!src){ 
+  if(!src){
     Logger.log('コピー元ファイルのURLが無効、もしくはアクセス権限がありません。');
     throw new Error('コピー元ファイルのURLが無効、もしくはアクセス権限がありません。');
     return -1;
   }
 
-  // フォルダ以外で複製権限が無いとき（フォルダの場合は常に複製権限無しになる）
-  if(src.mimeType !== 'application/vnd.google-apps.folder' && !src.capabilities.canCopy){
-    Logger.log('コピー元ファイルに対する複製権限がありません。');
-    throw new Error('コピー元ファイルに対する複製権限がありません。');
-    return -1;
-  }
+  // // copyFileToFolder関数に移植したので不要かも
+  // // フォルダ以外で複製権限が無いとき（フォルダの場合は常に複製権限無しになる）
+  // if(src.mimeType !== 'application/vnd.google-apps.folder' && !src.capabilities.canCopy){
+  //   Logger.log('コピー元ファイルに対する複製権限がありません。');
+  //   throw new Error('コピー元ファイルに対する複製権限がありません。');
+  //   return -1;
+  // }
 
   // // 2.書き込み先の確認
   // URLからファイルIDを抽出
@@ -250,13 +270,57 @@ function main(srcUrl, qty, destUrl){
     }
   }else{
     // フォルダの複製（再帰）
+    for(let i=0 ; i<qty ; i++){
+      isTopFolder = true;
+      copyFolder(src,dest.id); // Todo
+    }
   }
+}
 
+
+// APIを用いたフォルダ作成のテスト
+function createFolderTest(){
+
+  const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+  const folderName = 'APIフォルダ作成のテスト';
+
+  // フォルダ生成
+  const createdFolder = Drive.Files.create(
+    {
+      name: folderName,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [destFolderId],
+    },
+    null,
+    { fields: "id,name,mimeType" }
+  );
+
+  Logger.log('createdFolder ID :' + createdFolder.id);
+  Logger.log('createdFolder name :' + createdFolder.name);
+  Logger.log('createdFolder mimeType :' + createdFolder.mimeType);
+}
+
+// APIを用いたフォルダ内アイテム取得のテスト
+function queryTest(){
+
+  const srcFolderId = '17PRLe1GPz-6tFj9oZ1RgtN9uyCc15q-2'; // 1-3>25年度のフォルダ
+  // const srcFolderId = '1swkNaeoaiCBWhpctrmxojTtDAWIcBNSi' // 1-3のフォルダ（オーナー自分）
+  // const srcFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+
+  const children = Drive.Files.list({
+    q: `'${srcFolderId}' in parents and trashed = false`,
+    fields: 'files(id,name,mimeType,capabilities(canCopy),shortcutDetails(targetId))'
+  }).files;
+
+  for(const child of children){
+    Logger.log('アイテム名 :' + child.name);
+  }
 
 }
 
 function mainTest(){
-  const srcUrl = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0'; // Lmtg議事録自動送信
+  const srcUrl = 'https://drive.google.com/drive/folders/1gv04gZ0FyBGbkakQhBP2pUXF53KaoIA-'; // 「データ複製App_フォーム複製の挙動確認」（マイドライブ）
+  // const srcUrl = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0'; // Lmtg議事録自動送信
   // const srcUrl = 'https://script.google.com/home/projects/1dIcPU4sWCtqazAxm1SreqebhQafhpbdkpdYfKtaD7AVsC2Yiz2YxPGTm/edit'; // このGAS
   // const srcUrl = 'https://docs.google.com/presentation/d/1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k/edit?usp=drive_link&ouid=106881036912205881453&rtpof=true&sd=true'; // マイドライブ上の25-自己紹介ブック
   // const srcUrl = 'https://script.google.com/d/1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh/edit?usp=drive_link'; // GAS マイドライブのpractice
@@ -272,7 +336,7 @@ function mainTest(){
   // const destUrl = 'https://drive.google.com/drive/folders/1swkNaeoaiCBWhpctrmxojTtDAWIcBNSi'; // 1-3のAdvフォルダ（オーナー自分）
   // const destUrl = 'https://developers.google.com/apps-script/developersdevelopersdevelopersdevelopersreference/spreadsheet/spreadsheet-app?hl=ja'; //無関係のURL
 
-  const qty = 3;
+  const qty = 2;
 
   main(srcUrl,qty,destUrl);
 }
