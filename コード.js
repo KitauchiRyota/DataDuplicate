@@ -267,12 +267,14 @@ function main(srcUrl, qty, destUrl){
     // Todo：作成後ファイルの名前指定機能
     for(let i=0 ; i<qty ; i++){
       copyFileToFolder(src,dest.id);
+      // 名前指定が無い場合、同じ名前のデータが生成されるので、「_のコピー1」とかにする
     }
   }else{
     // フォルダの複製（再帰）
     for(let i=0 ; i<qty ; i++){
       isTopFolder = true;
       copyFolder(src,dest.id); // Todo
+      // 名前指定が無い場合、同じ名前のデータが生成されるので、「_のコピー1」とかにする
     }
   }
 }
@@ -319,7 +321,8 @@ function queryTest(){
 }
 
 function mainTest(){
-  const srcUrl = 'https://drive.google.com/drive/folders/1gv04gZ0FyBGbkakQhBP2pUXF53KaoIA-'; // 「データ複製App_フォーム複製の挙動確認」（マイドライブ）
+  const srcUrl = 'https://drive.google.com/drive/u/0/folders/1YFEjUxtzXm2mMWbsY0dpmDnwXLapn-ws'; // konbuの「共有テスト」フォルダ
+  // const srcUrl = 'https://drive.google.com/drive/folders/1gv04gZ0FyBGbkakQhBP2pUXF53KaoIA-'; // 「データ複製App_フォーム複製の挙動確認」（マイドライブ）
   // const srcUrl = 'https://docs.google.com/spreadsheets/d/1craBclvCdit5RVRpxjCpoiAH4b91SqUgGAXgI-g_2Ng/edit?gid=0#gid=0'; // Lmtg議事録自動送信
   // const srcUrl = 'https://script.google.com/home/projects/1dIcPU4sWCtqazAxm1SreqebhQafhpbdkpdYfKtaD7AVsC2Yiz2YxPGTm/edit'; // このGAS
   // const srcUrl = 'https://docs.google.com/presentation/d/1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k/edit?usp=drive_link&ouid=106881036912205881453&rtpof=true&sd=true'; // マイドライブ上の25-自己紹介ブック

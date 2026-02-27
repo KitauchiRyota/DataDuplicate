@@ -19,40 +19,72 @@
   <h1>データ複製App</h1>
 
   <form id="duplicate-data">
-  <ul>
+  <ol>
     <li><label for="origin-data">元となるデータのURL：</label>
-    <input id="origin-data" type="text" required></input>
+    <input id="origin-data" type="text" required>
     <!-- Todo：アクセス権、有効なURLかなどのバリデーション -->
 
-    <!-- <li><label for="qty">作りたい個数：</label>
-    <input id="qty" type="number" required></input> -->
+    <li><label for="qty">作りたい個数：</label>
+    <br>
+    <label><input type="radio" name="qty-desig" value="qty-num">A.個数を指定して作成</label>
+    <div id='qty-num-options' class='qty-opt' style='display:none;'>
+      <label>新たに作る個数<input id="qty-num" type="number" min=1></label>
+      <label>（任意）コピー後のファイル名<input id="dest-name" type="texet"></label>
+      <div>「★」の位置を下で選んだ規則で置き換えることができます。「★」は使用しなくてもかまいません。※この方法で複製する場合、データ名に含まれる「★」は、必ず下の規則にで置き換わります。</div>
+      <label><input type="radio" name="rule-type" value="num" checked>1、2、3、・・・</label><br>
+      <label><input type="radio" name="rule-type" value="alp">A、B、C・・・</label><br>
+    </div>
+
+    <br>
+    <label><input type="radio" name="qty-desig" value="list">B.リスト分作成</label>
+    <div id='qty-list-options' class='qty-opt' style='display:none;'>
+      <label>リストを入力<textarea id="qty-list"></textarea></label>
+    </div>
     <!-- Todo：数値か、空欄かなどバリデーション -->
 
-    <!-- <li><label for="data-dest">複製先のフォルダ元のURL：</label>
-    <input id="data-dest" type="text" required></input><div>※デフォルトは、元データと同じ場所</div> -->
+    <li><label for="data-dest">複製先のフォルダ元のURL：</label>
+    <input id="data-dest" type="text"><div>※空欄の場合、元データと同じ場所に複製します。</div>
     <!-- Todo：元データのURLで初期化 -->
 
-    <!-- <li><label for="rule-type">複製後のデータ名に規則性を設定する：</label><input type="checkbox"></input><br> -->
+    <!-- <li><label for="rule-type">複製後のデータ名に規則性を設定する：</label><input type="checkbox"><br> -->
     <!-- Todo：チェックボックスをクリックすると以降の選択肢が表示されるように、それまでは非表示に -->
     
-    <!-- <input id="data-name" type="text" value="★" required></input><br> -->
+    <!-- <input id="data-name" type="text" value="★" required><br> -->
     <!-- <div>※「★」の位置が、下で選んだ規則で置き換わります。この方法で複製する場合、データ名に「★」を含めることはできません。</div> -->
     <!-- Todo：★の数（0個も許しても良い。）、Googleドライブ側のデータ名に使える文字のルールについて、 -->
 
     <!-- <label for="rule-num"><input id="rule-num" type="radio" name="rule-type" value="num" required>1、2、3、・・・</label><br>
     <label for="rule-alp"><input id="rule-alp" type="radio" name="rule-type" value="alp">A、B、C・・・</label><br>
     <label for="rule-any"><input id="rule-any" type="radio" name="rule-type" value="any">ユーザー定義</label>
-    <input id="user-defined-rule" type="text"></input><br> -->
+    <input id="user-defined-rule" type="text"><br> -->
     <!-- Todo：ユーザー定義のラジオを選択すると選択肢が表示されるように、それまでは非表示。どれも選んでない状態はエラーを出す。 -->
     
     <button type="submit">複製</button>
     <div id="status"></div>
-  </ul>
+  </ol>
   </form>
 
   <div id="statusMessage"></div>
 
   <script>
+
+    const radios = document.querySelectorAll('input[name="qty-desig"]');
+    const qtyNumDiv = document.getElementById('qty-num-options');
+    const qtyListDiv = document.getElementById('qty-list-options');
+    radios.forEach(radio => {
+      radio.addEventListener('change',()=>{
+        if(radio.value === 'qty-num'){
+          qtyNumDiv.style.display = 'block';
+          qtyListDiv.style.display = 'none';      
+        }else if(radio.value === 'list'){
+          qtyNumDiv.style.display = 'none';
+          qtyListDiv.style.display = 'block';
+        }else{
+          qtyNumDiv.style.display = 'none';
+          qtyListDiv.style.display = 'none';
+        }
+      })
+    });
 
     const statusDiv = document.getElementById('status');
     const duplicateDataForm = document.getElementById('duplicate-data');
@@ -76,7 +108,7 @@
     }
 
 
-    // 以降は議事録送信プログラム
+    // （参考用）以降は議事録送信プログラム
 
     const selectElement = document.getElementById('weekdaySelect');
     const statusMessageDiv = document.getElementById('statusMessage');
