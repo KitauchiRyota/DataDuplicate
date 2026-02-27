@@ -34,26 +34,21 @@ function getDriveMetaData(id) {
   }
 }
 
-// 不要
 /**
- * IDからファイルの種類（MIME Type）を返す関数
- * @param {string} id
- * @return {string} MIME Type
- */
-function getMimeTypeById(id){
-  const f = Drive.Files.get(id, { fields: 'mimeType' });
-  return f.mimeType;
-}
-
-// 不要
-/**
- * IDから、ファイルに複製の権限があるかを判定する関数
- * @param {string} id
+ * スプレッドシートのIDから、このスプレッドシートが、フォームの回答の出力先として指定しているかを判定する関数
+ * @param id {string} 判定したいスプレッドシートのURL
  * @return {boolean}
  */
-function haveCopyPermission(id){
-  const f = Drive.Files.get(id, { fields: 'capabilities(canCopy)' });
-  return f.capabilities?.canCopy === true; // フォルダの場合は常にfalseになる
+function isFormLinked(id){
+  const ss = SpreadsheetApp.openById(id);
+  const formUrl = ss.getFormUrl();
+  if(formUrl){
+    Logger.log('Linked Form: ' +formUrl);
+    return true;
+  }else{
+    Logger.log('No Linked Form');
+    return false;
+  }
 }
 
 /**
@@ -143,76 +138,11 @@ function copyFileToFolder(srcFile,destFolderId,copiedFileName = null){
     }
   }
 }
-  
-
-// 不要
-/**
- * ショートカットを生成する関数
- */
-function createDriveShortcut(targetFileId,destFolderId,shortcutName) {
-  // const targetFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
-  // const targetFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS マイドライブのpractice
-  // const targetFileId = '1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU'; // spreadSheet
-  // const targetFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
-  // const targetFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
-  // const targetFileId = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
-  // const targetFileId = '1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM'; // マイドライブ上のフォームにリンクされているスプシ
-  // const targetFileId = '1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ'; // プライベートアカウントのマイドライブ上のダミーデータ
-  // const targetFileId = '17PRLe1GPz-6tFj9oZ1RgtN9uyCc15q-2'; // 1-3のフォルダ
-  // const targetFileId = '1swkNaeoaiCBWhpctrmxojTtDAWIcBNSi' // 1-3のフォルダ（オーナー自分）
-
-  // const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
-  // const destFolderId = '1Cv6n4vgm_c4siFbFNrg00OorDjm6aSD3';
-  // const shortcutName = DriveApp.getFileById(targetFileId).getName();
-
-  const shortcut = Drive.Files.create(
-    {
-      name: shortcutName,
-      mimeType: 'application/vnd.google-apps.shortcut',
-      parents: [destFolderId],
-      shortcutDetails: {
-        targetId: targetFileId
-      }
-    }
-  );
-
-  Logger.log('created shortcut :'+ shortcut.id);
-}
-
-/**
- * ショートカットの名前取得テスト
- */
-function getShortcutNameTest(){
-  // const id = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
-  const id = '1L9iumWUHtnq31EJfSkA-tQ4sWnGnWJr9'; // 2-1のショートカット
-
-  const f = Drive.Files.get(id, { fields: 'name' });
-  Logger.log(f.name);
-}
-
-/**
- * スプレッドシートのIDから、このスプレッドシートが、フォームの回答の出力先として指定しているかを判定する関数
- * @param id {string} 判定したいスプレッドシートのURL
- * @return {boolean}
- */
-function isFormLinked(id){
-  const ss = SpreadsheetApp.openById(id);
-  const formUrl = ss.getFormUrl();
-  if(formUrl){
-    Logger.log('Linked Form: ' +formUrl);
-    return true;
-  }else{
-    Logger.log('No Linked Form');
-    return false;
-  }
-}
-
 
 /**
  * Googleドライブのフォルダを再帰的にコピーする関数
  */
-// スプシ判定、ショートカット再生成、通常コピーをまとめて一つの関数にする
-function copyFolder(srcFolderId,destFolderId){ // 実質的なmain関数
+function copyFolder(srcFolderId,destFolderId){
 
   // APIでメタデータを取得
   const src = getDriveMetaData(srcFolderId);
@@ -249,7 +179,6 @@ function copyFolder(srcFolderId,destFolderId){ // 実質的なmain関数
     const newSubFolder = destFolder.createFolder(originfolder.getName());
     copyFolder(subFolder.getId(),newSubFolder.getId())
   }
-
 }
 
 /**
@@ -314,12 +243,15 @@ function main(srcUrl, qty, destUrl){
   }
 
   // ファイルの複製（ループ）
-  // Todo：作成後ファイルの名前指定機能
-  for(let i=0 ; i<qty ; i++){
-    copyFileToFolder(src,dest.id,"aa");
+  if(src.mimeType !== 'application/vnd.google-apps.folder'){
+    // Todo：作成後ファイルの名前指定機能
+    for(let i=0 ; i<qty ; i++){
+      copyFileToFolder(src,dest.id);
+    }
+  }else{
+    // フォルダの複製（再帰）
   }
 
-  // フォルダの複製（再帰）
 
 }
 
@@ -343,6 +275,51 @@ function mainTest(){
   const qty = 3;
 
   main(srcUrl,qty,destUrl);
+}
+
+// 不要
+/**
+ * ショートカットを生成する関数
+ */
+function createDriveShortcut(targetFileId,destFolderId,shortcutName) {
+  // const targetFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
+  // const targetFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS マイドライブのpractice
+  // const targetFileId = '1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU'; // spreadSheet
+  // const targetFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
+  // const targetFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
+  // const targetFileId = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
+  // const targetFileId = '1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM'; // マイドライブ上のフォームにリンクされているスプシ
+  // const targetFileId = '1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ'; // プライベートアカウントのマイドライブ上のダミーデータ
+  // const targetFileId = '17PRLe1GPz-6tFj9oZ1RgtN9uyCc15q-2'; // 1-3のフォルダ
+  // const targetFileId = '1swkNaeoaiCBWhpctrmxojTtDAWIcBNSi' // 1-3のフォルダ（オーナー自分）
+
+  // const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+  // const destFolderId = '1Cv6n4vgm_c4siFbFNrg00OorDjm6aSD3';
+  // const shortcutName = DriveApp.getFileById(targetFileId).getName();
+
+  const shortcut = Drive.Files.create(
+    {
+      name: shortcutName,
+      mimeType: 'application/vnd.google-apps.shortcut',
+      parents: [destFolderId],
+      shortcutDetails: {
+        targetId: targetFileId
+      }
+    }
+  );
+
+  Logger.log('created shortcut :'+ shortcut.id);
+}
+
+/**
+ * ショートカットの名前取得テスト
+ */
+function getShortcutNameTest(){
+  // const id = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
+  const id = '1L9iumWUHtnq31EJfSkA-tQ4sWnGnWJr9'; // 2-1のショートカット
+
+  const f = Drive.Files.get(id, { fields: 'name' });
+  Logger.log(f.name);
 }
 
 function testFormLinkedFunction(){
