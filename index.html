@@ -196,10 +196,10 @@
       const destUrl = document.getElementById('data-dest').value.trim();
 
       // console.log(inputUrl + ',' + typeof(inputUrl));
-      // duplicationTest(srcUrl, nameObj, destUrl);
+      callDuplication(srcUrl, nameObj, destUrl);
     })
 
-    function duplicationTest(srcUrl, qty, nameArray, destUrl){
+    function callDuplication(srcUrl, nameObj, destUrl){
       google.script.run.withSuccessHandler(res =>{
         console.log(res);
         statusDiv.textContent = res;

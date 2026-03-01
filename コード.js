@@ -203,11 +203,10 @@ let isTopFolder = false;
 /**
  * フロントから呼ばれるmain関数
  * @param {string} srcUrl コピー元（オリジナルデータ）のURL
- * @param {integer} qty 生成する数
- * @param {Array} destNames 生成後の各データに付ける名前を格納している配列
+ * @param {object} nameObj 生成後の各データに付ける名前に関する情報を格納しているオブジェクト
  * @param {string} destUrl コピー先のフォルダURL
  */
-function main(srcUrl, qty, destNames, destUrl){
+function main(srcUrl, nameObj, destUrl){
 
   // // 1.オリジナルファイルの確認
   // URLからファイルIDを抽出
@@ -228,6 +227,12 @@ function main(srcUrl, qty, destNames, destUrl){
     Logger.log('コピー元ファイルのURLが無効、もしくはアクセス権限がありません。');
     throw new Error('コピー元ファイルのURLが無効、もしくはアクセス権限がありません。');
     return -1;
+  }
+
+  if(nameObj.qtyDesig === 'num-only'){
+    for(let i=0 ; i<nameObj.qty ; i++){
+      nameObj.destNames.push(src.name + '_コピー' + (i+1));
+    }
   }
 
   // // copyFileToFolder関数に移植したので不要かも
@@ -270,14 +275,14 @@ function main(srcUrl, qty, destNames, destUrl){
   if(src.mimeType !== 'application/vnd.google-apps.folder'){
     // Todo：作成後ファイルの名前指定機能
     // for(let i=0 ; i<qty ; i++){
-    for(const name of destNames){
+    for(const name of nameObj.destNames){
       copyFileToFolder(src,dest.id,name);
       // 名前指定が無い場合、同じ名前のデータが生成されるので、「_のコピー1」とかにする
     }
   }else{
     // フォルダの複製（再帰）
     // for(let i=0 ; i<qty ; i++){
-    for(const name of destNames){
+    for(const name of nameObj.destNames){
 
       isTopFolder = true;
       copyFolder(src,dest.id,name); // Todo
