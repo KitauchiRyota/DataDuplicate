@@ -71,6 +71,7 @@
 
   <script>
 
+    // 複製方法の選択によって表示を変更
     const radios = document.querySelectorAll('input[name="qty-desig"]');
     const qtyNumDiv = document.getElementById('qty-num-options');
     const qtyListDiv = document.getElementById('qty-list-options');
@@ -89,29 +90,113 @@
       })
     });
 
+    /**
+     * 数値を、Aからの個数に対応するアルファベット（26以上は、「AA、AB、・・・」の形式）に変換する関数
+     * @param {integer} n 変換元の数値
+     * @return {string} result 変換後のアルファベットの文字列
+     */
+    function numToAlp(n) {
+      let result ='';
+      while (n > 0) {
+        n--; 
+        result = String.fromCharCode(65 + (n % 26)) + result;
+        n = Math.floor(n / 26);
+      }
+      return result;
+    }
+
+    /**
+     * 複製方法から、データの個数・データ名の配列のオブジェクトを返す関数
+     * @param {string} desig 複製方法（inputのvalue）
+     * @return {object} 複製方法、データの個数、データ名の配列を格納しているオブジェクト
+    */
+    function createDestNameObject(desig){
+
+      let nameArray = [];
+
+      switch(desig){
+        case 'qty-num': // 個数を指定して複製の場合
+
+          const qty = document.getElementById('qty-num').value;
+          const destName = document.getElementById('dest-name').value.trim();
+
+          if(destName){ // データ名が入力されている場合
+          // Todo:アルファベット置き換えの「★」処理
+
+          const nameRule = document.querySelector('input[name="rule-type"]:checked').value;
+
+          switch(nameRule){
+            case 'num':
+              for(let i=0 ; i<qty ; i++){
+                nameArray.push(destName.replace('★',i+1));
+              }
+              break;
+            case 'alp':
+              for(let i=0 ; i<qty ; i++){
+                nameArray.push(destName.replace('★',numToAlp(i+1)));
+              }
+              break;
+          }
+
+            return {
+              qtyDesig: 'num-and-name',
+              qty: qty,
+              destNames: nameArray
+            };
+
+          }else{ // データ名が空白文字の時
+            return {
+              qtyDesig: 'num-only',
+              qty: qty,
+              destNames: nameArray
+            };
+          }
+          break;
+        
+        case 'list': // リストから複製の場合
+          const qtyList = document.getElementById('qty-list').value;
+          // 改行で分割し、空白文字の行を除去
+          nameArray = qtyList
+            .split("\n")
+            .map(name => name.trim())
+            .filter(name => name !== "");
+
+          console.log('list :' + nameArray);
+          console.log('type of list ;' + typeof(nameArray));
+
+          return {
+            qtyDesig: 'list',
+            qty: nameArray.length,
+            destNames: nameArray
+          };
+          break;
+      }
+    }
+
     const statusDiv = document.getElementById('status');
     const duplicateDataForm = document.getElementById('duplicate-data');
+
     duplicateDataForm.addEventListener('submit',async(e) =>{
       e.preventDefault();
 
-      const qtyList = document.getElementById('qty-list').value;
-      // 改行で分割し、空白文字の行を除去
-      const nameArray = qtyList
-        .split("\n")
-        .map(name => name.trim())
-        .filter(name => name !== "");
+      const selectedDesig = document.querySelector('input[name="qty-desig"]:checked');
 
-      console.log('list :' + nameArray);
-      console.log('type of list ;' + typeof(nameArray));
+      if(!selectedDesig){
+        alert('複製方法を選択して下さい！');
+        return;
+      }
 
-      const qty = nameArray.length;
+      const nameObj = createDestNameObject(selectedDesig.value);
+      console.log(nameObj.qty);
+      console.log(nameObj.qtyDesig);
+      console.log(nameObj.destNames);
 
       statusDiv.textContent = '';
-      const srcUrl = document.getElementById('origin-data').value;
-      const destUrl = document.getElementById('data-dest').value;
+      const srcUrl = document.getElementById('origin-data').value.trim();
+      const destUrl = document.getElementById('data-dest').value.trim();
 
       // console.log(inputUrl + ',' + typeof(inputUrl));
-      duplicationTest(srcUrl, qty, nameArray, destUrl);
+      // duplicationTest(srcUrl, nameObj, destUrl);
     })
 
     function duplicationTest(srcUrl, qty, nameArray, destUrl){
@@ -122,7 +207,7 @@
       .withFailureHandler(err => {
         console.error(err);
         return err;
-      }).main(srcUrl, qty, nameArray, destUrl);
+      }).main(srcUrl, nameObj, destUrl);
     }
 
 

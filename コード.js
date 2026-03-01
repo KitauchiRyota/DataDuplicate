@@ -201,7 +201,11 @@ function copyFolder(srcFolder,destFolderId,copiedFolderName=null){
 let isTopFolder = false;
 
 /**
- * フロントから呼ばれるmain関数の予定・・・
+ * フロントから呼ばれるmain関数
+ * @param {string} srcUrl コピー元（オリジナルデータ）のURL
+ * @param {integer} qty 生成する数
+ * @param {Array} destNames 生成後の各データに付ける名前を格納している配列
+ * @param {string} destUrl コピー先のフォルダURL
  */
 function main(srcUrl, qty, destNames, destUrl){
 
