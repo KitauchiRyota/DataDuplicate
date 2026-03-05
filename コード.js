@@ -6,7 +6,6 @@ function doGet() {
       .setTitle('データ複製App'); // ブラウザのタブに表示されるタイトル
 }
 
-
 /**
  * URLからIDを取得する関数
  * @param {string} url
@@ -258,7 +257,7 @@ function main(srcUrl, nameObj, destUrl){
   const dest = getDriveMetaData(destId);
 
   // メタデータを所得できなかった場合
-  if(!dest){ 
+  if(!dest || dest.mimeType !== 'application/vnd.google-apps.folder'){ 
     Logger.log('書き込み先フォルダのURLが無効、もしくはアクセス権限がありません。');
     throw new Error('書き込み先フォルダのURLが無効、もしくはアクセス権限がありません。');
     return -1;

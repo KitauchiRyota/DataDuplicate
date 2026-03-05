@@ -174,6 +174,27 @@
       opacity: 1;
     }
 
+    .modern-btn{
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+
+    .modern-btn:hover{
+      background:#4338ca;
+      transform: scale(1.03);
+    }
+
+    .modern-btn:active{
+      transform: scale(0.98);
+    }
+
   </style>
 </head>
 
@@ -218,7 +239,7 @@
           </label>
       </p>
 
-      <div style="padding-left:1.7em;">
+      <div class="card-item" style="margin-left:1.7em;">
         <div class="my-h4">i.データ名の「★」を次のルールで置き換える（省略可）
           <span class="tooltip">?
             <span class="tooltip-text">
@@ -259,14 +280,20 @@
 
     <!-- 3.作成先のURL -->
     <li class="my-h2">
-      <label for="data-dest">複製先のフォルダ元のURL（省略可）</label>
+      <label class="required-label" for="data-dest">複製先のフォルダ元のURL</label>
+      <!-- Todo:省略可能にして、省略した場合は、元データと同じ場所に作るように -->
     </li>
-    <input class="modern-text-input" id="data-dest" type="text" placeholder="Todo:空欄の場合、元データと同じ場所に複製します。">
+    <input class="modern-text-input" id="data-dest" type="text" required> 
+    <!-- placeholder="Todo:空欄の場合、元データと同じ場所に複製します。"> -->
 
     <!-- Todo：Googleドライブ側のデータ名に使える文字のルールについて、 -->
 
-    <button type="submit">複製</button>
-    <div style="font-weight:bold; color:red;";><div id="status"></div></div>
+    <div id="statuses" style="margin-top:10px;">
+      <div style="font-weight:bold; color:red;"><div id="status"></div></div>
+      <div style="font-weight:bold; color:green;"><div id="success-message" style="display:none;">成功！</div></div>
+    </div>
+
+    <button id="run-duplicate-btn" class="modern-btn" style="margin-top:10px;" type="submit">複製！</button>
   </ol>
   </form>
 
@@ -384,11 +411,14 @@
     }
 
     const statusDiv = document.getElementById('status');
+    const successMessage = document.getElementById('success-message');
     const duplicateDataForm = document.getElementById('duplicate-data');
+    const submitButton = document.getElementById("run-duplicate-btn");
 
     duplicateDataForm.addEventListener('submit',async(e) =>{
       e.preventDefault();
       statusDiv.textContent = '';
+      successMessage.style.display = 'none';
 
       const selectedDesig = document.querySelector('input[name="qty-desig"]:checked');
 
@@ -399,9 +429,9 @@
       }
 
       const nameObj = createDestNameObject(selectedDesig.value);
-      console.log(nameObj.qty);
-      console.log(nameObj.qtyDesig);
-      console.log(nameObj.destNames);
+      // console.log(nameObj.qty);
+      // console.log(nameObj.qtyDesig);
+      // console.log(nameObj.destNames);
 
       const srcUrl = document.getElementById('origin-data').value.trim();
       const destUrl = document.getElementById('data-dest').value.trim();
@@ -411,13 +441,36 @@
     })
 
     function callDuplication(srcUrl, nameObj, destUrl){
+      
+      submitButton.disabled = true; // ボタンを無効化
+
+      let dotCount = 0;
+      submitButton.textContent = '処理中';
+
+      const intervalId = setInterval(() => {
+        dotCount = dotCount % 4; // 点の数を0, 1, 2, 3, 0, ...とループさせる
+        const dots = "・".repeat(dotCount++);
+        submitButton.textContent = `処理中${dots}`;
+      }, 500);
+
       google.script.run.withSuccessHandler(res =>{
         console.log(res);
-        statusDiv.textContent = res;
+        successMessage.style.display = 'block';
+
+        // ボタンを初期化
+        clearInterval(intervalId); // ★ アニメーションを停止
+        submitButton.disabled = false; // ★ ボタンを再度有効化
+        submitButton.textContent = "複製！";
       })
       .withFailureHandler(err => {
         statusDiv.textContent = 'エラー：' + err;
         console.error(err);
+
+        // ボタンを初期化
+        clearInterval(intervalId); // ★ アニメーションを停止
+        submitButton.disabled = false; // ★ ボタンを再度有効化
+        submitButton.textContent = "複製！";
+
         return err;
       }).main(srcUrl, nameObj, destUrl);
     }
