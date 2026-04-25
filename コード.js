@@ -199,6 +199,35 @@ function copyFolder(srcFolder,destFolderId,copiedFolderName=null){
 // 複製後のフォルダの名前を指定する場合、再帰関数の初回だけフォルダ名を指定するためのグローバル変数
 let isTopFolder = false;
 
+
+/**
+ * コピー元の配下のディレクトリに、複製先のフォルダが含まれていないかを確認する関数
+ * @param {string} srcFolderId 元となるファイルのID
+ * @param {string} destFolderId コピー先のフォルダID
+ * @preturn {boolean}
+ */
+function isDescendant(srcFolderId, destFolderId) {
+  let currentId = destFolderId;
+
+  while (currentId) {
+    const file = Drive.Files.get(currentId, { fields: "parents" });
+
+    if (!file.parents || file.parents.length === 0) {
+      return false;
+    }
+
+    const parentId = file.parents[0]; // 通常は1つ（共有ドライブの場合は複数ある可能性がある）
+
+    if (parentId === srcFolderId) {
+      return true;
+    }
+
+    currentId = parentId;
+  }
+
+  return false;
+}
+
 /**
  * フロントから呼ばれるmain関数
  * @param {string} srcUrl コピー元（オリジナルデータ）のURL
@@ -270,6 +299,14 @@ function main(srcUrl, nameObj, destUrl){
     return -1;
   }
 
+  // 無限ループ（複製先が複製元の下のディレクトリに無いか）のチェック
+  if(isDescendant(src.id,dest.id)){
+    Logger.log('コピー元フォルダの内部に、コピー先フォルダがあります（無限ループが発生します）。');
+    throw new Error('コピー元フォルダの内部に、コピー先フォルダがあります（無限ループが発生します）。');
+    return -1;
+  }
+
+
   // ファイルの複製（ループ）
   if(src.mimeType !== 'application/vnd.google-apps.folder'){
     // Todo：作成後ファイルの名前指定機能
@@ -294,6 +331,29 @@ function main(srcUrl, nameObj, destUrl){
 // // ================
 // // 以降はデバッグ用コード
 
+// 複製元のディレクトリ内にコピー先がある場合の無限ループの判定テスト
+function loopExitTest(){
+  const targetFileId = '1Qn6xxnA5LdWjDiZ3C_jHMhqmm7Gk557L' // PCSU>1-3>26
+  // const targetFileId = '17TwP9vApdZlGlNQhjWclGnVBCRRqy0Px' // 「A」：マイドライブ上のループ確認用のフォルダ（destを「B」にすることで無限ループ）
+  // const targetFileId = '1-fpxrIkw_pUf8iUk-9Zc5lOPhUg1cr5k'; // .pptx マイドライブ上の自己紹介ブック
+  // const targetFileId = '1WoK7GbhfnOgS1cV4FpQivGFielqRRJx5ekzo9elhGgGKx-9m1zUzYcoh'; // GAS マイドライブのpractice
+  // const targetFileId = '1AS_I_1iAoorcdUqDvEMr4UfrLlx1zkzJa_cXXvwaohU'; // spreadSheet
+  // const targetFileId = '1PewdOTCoo99PfIa2oK9_PWQ9y-eGjeDU';  // 3-3のぱそぶー.pptx
+  // const targetFileId = '1MrPtcqAqGmbt9rJiOxzA4_YFYEPqHcLpgArX7G5PB6_hOTpyEU-D3YC7'; // 1-3のGAS
+  // const targetFileId = '1QmR2_xu1BPOJXPtq-De7Df04O__n_mJU'; // ショートカット
+  // const targetFileId = '1tvC7Ai4HFHGnRiKJAhJ1skEfIYaJSotEsFygtEx9RvM'; // マイドライブ上のフォームにリンクされているスプシ
+  // const targetFileId = '1Q97-i8yOWrZORHFVVruKLrmeIbVQHU3YNWQDP300WEQ'; // プライベートアカウントのマイドライブ上のダミーデータ
+  // const targetFileId = '17PRLe1GPz-6tFj9oZ1RgtN9uyCc15q-2'; // 1-3のフォルダ
+  // const targetFileId = '1swkNaeoaiCBWhpctrmxojTtDAWIcBNSi' // 1-3のフォルダ（オーナー自分）
+
+  // const destFolderId = '1Nzfm_YXWyhjWEPImFWtM9-OWAIfZZreJ'; // PCSU_3-3
+  // const destFolderId = '1Cv6n4vgm_c4siFbFNrg00OorDjm6aSD3';
+  // const destFolderId = '1fsXOZR8iGITFQ-Br7A2qdpRV0bTVxZFD'; // 「B」：マイドライブ内の階層深めのフォルダID
+  const destFolderId = '17XqjbZ6fj-zvAAGDXaoyWgC5hABrTr5K'; // PCSU>26>26-Std>・・・の「【template】」
+
+  Logger.log(isDescendant(targetFileId,destFolderId));
+  
+}
 
 // APIを用いたフォルダ作成のテスト
 function createFolderTest(){

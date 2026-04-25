@@ -204,6 +204,19 @@
   <p>このWebアプリケーションでは、Googleドライブ上のデータを複製する機能を提供しています。</p>
   <p><span class="required-label"></span>は必須項目です。</p>
 
+  <details>
+  <summary style="font-size:1.2rem; margin-top:50px;">技術仕様</summary>
+    <ul>
+      <li>Googleスプレッドシートが、Googleフォームの回答の出力先となっている（Googleフォームとリンクされている）の場合、そのGoogleスプレッドシートは複製せず、処理をスキップします。</li>
+      <li>ログインしたGoogleアカウントのユーザの権限で実行します。つまり、複製するデータの容量は利用者のGoogleドライブから負担し、アクセス権限も利用者のものを使用します。</li>
+      <li>GASプロジェクトを複製する際には、一旦マイドライブのルートに作成し、その後複製先フォルダへ移動しています。</li>
+      <li>1.や3.で、マイドライブのルートを指定することはできません。</li>
+      <li>1.や3.へ入力するURLは、どのような方法（ブラウザのアドレスバー、共有からリンクコピー、API経由、など）で取得してもかまいません。また、データの種類（Googleスプレッドシート、フォルダ、画像、など）をユーザが気にする必要はありません。</li>
+      <li>2.A.で、「コピー後のデータ名」に「★」が複数ある場合、2個目以降の「★」は何にも置き換えられず、コピー後のデータ名に現れます。</li>
+      <!-- <li></li> -->
+    </ul>
+  </details>
+
   <form id="duplicate-data">
   <ol>
     <!-- 1.元データのURL -->
@@ -260,7 +273,7 @@
         <label class="radio">
           <input type="radio" name="rule-type" value="alp">
           <span class="radio-custom"></span>
-          A、B、C・・・
+          A、B、C、・・・
         </label>
       </div>
     </div>
@@ -281,7 +294,7 @@
 
     <!-- 3.作成先のURL -->
     <li class="my-h2">
-      <label class="required-label" for="data-dest">複製先のフォルダ元のURL</label>
+      <label class="required-label" for="data-dest">複製先のフォルダのURL</label>
       <!-- Todo:省略可能にして、省略した場合は、元データと同じ場所に作るように -->
     </li>
     <input class="modern-text-input" id="data-dest" type="text" required> 
