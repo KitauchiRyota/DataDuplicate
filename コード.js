@@ -104,7 +104,8 @@ function copyFileToFolder(srcFile,destFolderId,copiedFileName = null){
       Logger.log('created shortcut :'+ shortcut.id);
       return shortcut;
     }catch(e){
-      Logger.log('Shortcut create error: ' + e.message);
+      Logger.log('ショートカット（' + srcFileName +'）の生成に失敗し、処理を中断しました。' + e.message);
+      throw new Error('ショートカット（' + srcFileName +'）の生成に失敗し、処理を中断しました。' + e.message);
       return null;
     }
   }
@@ -139,6 +140,7 @@ function copyFileToFolder(srcFile,destFolderId,copiedFileName = null){
       return copiedFile;
     }catch(e){
       Logger.log("Copy error: " + e.message);
+      throw new Error('ファイル（' + srcFileName +'）の生成に失敗し、処理を中断しました。' + e.message);
       return null;
     }
   }
