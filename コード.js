@@ -149,9 +149,10 @@ function copyFileToFolder(srcFile,destFolderId,copiedFileName = null){
  * @param {object} srcFolder getDriveMetaDataで取得した形式のファイルオブジェクト
  * @param {string} destFolderId コピー先のフォルダID
  * @param {string} [copiedFolderName] コピー後のフォルダ名
+ * @param {boolean} [false] フォルダの名前を、元のフォルダ名にするか新たに指定するかを判別する、main関数から初回呼び出し時のみtrue
  * @return {File} copiedFolder コピー後のファイルのファイルオブジェクト
  */
-function copyFolder(srcFolder,destFolderId,copiedFolderName=null){
+function copyFolder(srcFolder,destFolderId,copiedFolderName=null,isTopFolder=false){
 
   const srcFolderId = srcFolder.id;
 
@@ -161,7 +162,6 @@ function copyFolder(srcFolder,destFolderId,copiedFolderName=null){
   // 再帰の初回の実行時かつ名前指定有りの場合は、名前指定
   if(isTopFolder && copiedFolderName){
     folderName = copiedFolderName;
-    isTopFolder = false;
   }else{
     // 元フォルダと同じ名前
     folderName = srcFolder.name;
@@ -195,9 +195,6 @@ function copyFolder(srcFolder,destFolderId,copiedFolderName=null){
 
   return createdFolder;
 }
-
-// 複製後のフォルダの名前を指定する場合、再帰関数の初回だけフォルダ名を指定するためのグローバル変数
-let isTopFolder = false;
 
 
 /**
@@ -321,7 +318,7 @@ function main(srcUrl, nameObj, destUrl){
     for(const name of nameObj.destNames){
 
       isTopFolder = true;
-      copyFolder(src,dest.id,name); // Todo
+      copyFolder(src,dest.id,name,true); // Todo
       // 名前指定が無い場合、同じ名前のデータが生成されるので、「_のコピー1」とかにする
     }
   }
