@@ -311,7 +311,6 @@
   </ol>
   </form>
 
-  <div id="statusMessage"></div>
 
   <script>
 
@@ -487,45 +486,6 @@
 
         return err;
       }).main(srcUrl, nameObj, destUrl);
-    }
-
-
-    // （参考用）以降は議事録送信プログラム
-
-    const selectElement = document.getElementById('weekdaySelect');
-    const statusMessageDiv = document.getElementById('statusMessage');
-
-    /**
-     * 送信ボタンが押されたときにGAS関数を呼び出す
-     */
-    function sendMinute() {
-      const selectedValue = selectElement.value; // 選択されたoptionのvalueを取得
-
-      // エラーメッセージとステータスをクリアし、ローディングを表示
-      statusMessageDiv.innerText = '';
-      // errorMessageDiv.innerText = '';
-      // loadingIndicator.style.display = 'block';
-
-      if (selectedValue) { // 何か選択された場合のみGASを呼び出す
-        google.script.run
-          .withSuccessHandler(function(mes) {
-            // 成功した場合の処理
-            statusMessageDiv.innerText = mes+"送信しました！";
-            // loadingIndicator.style.display = 'none'; // ローディング非表示
-            // setTimeout(() => statusMessageDiv.innerText = '', 3000); // 3秒後にメッセージを消す
-          })
-          .withFailureHandler(function() {
-            // 失敗した場合の処理
-            statusMessageDiv.innerText = "エラー：送信できませんでした";
-            // errorMessageDiv.innerText = 'エラー: ' + error.message;
-            // loadingIndicator.style.display = 'none'; // ローディング非表示
-          })
-          .getGreetingMessage(selectedValue); // GASの関数と選択値を引数として渡す
-      } else {
-        // 「選択してください」が選ばれた場合などの処理
-        statusMessageDiv.innerText = 'クラスを選択してください。';
-        // loadingIndicator.style.display = 'none';
-      }
     }
 
   </script>
